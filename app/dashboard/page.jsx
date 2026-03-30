@@ -75,16 +75,16 @@ export default function DashboardPage() {
 
   // Filter: search + app
   const filteredProjects = useMemo(() => {
-    let list = projects
+    let list = projects || []
     // App filter
     if (appFilter === 'none') {
-      list = list.filter(p => !p.app_id)
+      list = list.filter(p => !p?.app_id)
     } else if (appFilter) {
-      list = list.filter(p => p.app_id === appFilter)
+      list = list.filter(p => p?.app_id === appFilter)
     }
     // Search filter
-    const q = searchQuery.trim().toLowerCase()
-    if (q) list = list.filter(p => p.name.toLowerCase().includes(q))
+    const q = searchQuery?.trim()?.toLowerCase()
+    if (q) list = list.filter(p => (p?.name || '').toLowerCase().includes(q))
     return list
   }, [projects, searchQuery, appFilter])
 
@@ -272,14 +272,14 @@ export default function DashboardPage() {
                 appFilter === null ? 'bg-forge-accent text-forge-bg font-bold' : 'bg-forge-card border border-forge-border text-forge-muted hover:text-forge-text'
               }`}
             >Tất cả</button>
-            {apps.map(app => (
+            { (apps || []).map(app => (
               <button
-                key={app.id}
-                onClick={() => setAppFilter(appFilter === app.id ? null : app.id)}
+                key={app?.id}
+                onClick={() => setAppFilter(appFilter === app?.id ? null : app?.id)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
-                  appFilter === app.id ? 'bg-forge-accent text-forge-bg font-bold' : 'bg-forge-card border border-forge-border text-forge-muted hover:text-forge-text'
+                  appFilter === app?.id ? 'bg-forge-accent text-forge-bg font-bold' : 'bg-forge-card border border-forge-border text-forge-muted hover:text-forge-text'
                 }`}
-              >{app.name}</button>
+              >{app?.name || 'Unknown'}</button>
             ))}
             <button
               onClick={() => setAppFilter('none')}
@@ -327,15 +327,15 @@ export default function DashboardPage() {
                     className="flex-1 flex items-center gap-3 px-4 py-4 text-left"
                   >
                     <div className="w-9 h-9 rounded-xl bg-forge-accent/10 border border-forge-accent/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-forge-accent text-sm font-display font-bold">{project.name.charAt(0).toUpperCase()}</span>
+                      <span className="text-forge-accent text-sm font-display font-bold">{(project?.name || '?').charAt(0).toUpperCase()}</span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-forge-text truncate">{project.name}</p>
+                      <p className="text-sm font-medium text-forge-text truncate">{project?.name || 'Chưa đặt tên'}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-forge-muted">{formatDate(project.created_at)}</p>
-                        {project.apps && (
+                        <p className="text-xs text-forge-muted">{formatDate(project?.created_at)}</p>
+                        {project?.apps && (
                           <span className="text-xs text-forge-accent font-mono bg-forge-accent/10 px-1.5 py-0.5 rounded">
-                            {project.apps.slug}
+                            {project?.apps?.slug || 'no-slug'}
                           </span>
                         )}
                       </div>

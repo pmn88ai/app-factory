@@ -19,26 +19,29 @@ export default function TemplatesPage() {
     setLoading(true)
     try {
       const data = await dbGetTemplates()
-      setTemplates(data)
+      setTemplates(data ?? [])
     } catch (err) {
       console.error('Load templates failed:', err)
+      setTemplates([])
     } finally {
       setLoading(false)
     }
   }
 
   function handleStartCreate(template) {
-    setNewNameFor(template.id)
-    setInputName(`${template.name} (copy)`)
+    if (!template) return
+    setNewNameFor(template?.id)
+    setInputName(`${template?.name || 'Untitled'} (copy)`)
   }
 
   async function handleCreateFromTemplate(templateId) {
-    const name = inputName.trim()
+    if (!templateId) return
+    const name = inputName?.trim()
     if (!name) return
     setCreating(templateId)
     try {
       const project = await dbCreateFromTemplate(templateId, name)
-      router.push(`/project/${project.id}`)
+      router.push(`/project/${project?.id}`)
     } catch (err) {
       alert('Tạo từ template thất bại: ' + err.message)
       setCreating(null)
@@ -93,7 +96,7 @@ export default function TemplatesPage() {
               <div key={i} className="h-24 bg-forge-card border border-forge-border rounded-2xl animate-pulse" />
             ))}
           </div>
-        ) : templates.length === 0 ? (
+        ) : (templates || []).length === 0 ? (
           <div className="py-20 text-center">
             <div className="text-5xl mb-4">⭐</div>
             <p className="text-forge-muted text-sm">Chưa có template nào.</p>
@@ -102,9 +105,9 @@ export default function TemplatesPage() {
             </p>
           </div>
         ) : (
-          templates.map((template, idx) => (
+          (templates || []).map((template, idx) => (
             <div
-              key={template.id}
+              key={template?.id}
               className="bg-forge-card border border-forge-border rounded-2xl overflow-hidden animate-fade-in"
               style={{ animationDelay: `${idx * 50}ms` }}
             >
@@ -115,13 +118,13 @@ export default function TemplatesPage() {
                       <span className="text-lg">⭐</span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-forge-text truncate">{template.name}</p>
-                      <p className="text-xs text-forge-muted mt-0.5">{formatDate(template.created_at)}</p>
+                      <p className="text-sm font-medium text-forge-text truncate">{template?.name || 'Chưa đặt tên'}</p>
+                      <p className="text-xs text-forge-muted mt-0.5">{formatDate(template?.created_at)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
-                      onClick={() => handleRemoveTemplate(template.id)}
+                      onClick={() => handleRemoveTemplate(template?.id)}
                       className="text-xs text-forge-muted hover:text-forge-warning transition-colors px-2 py-1"
                     >
                       Bỏ template
@@ -136,22 +139,22 @@ export default function TemplatesPage() {
                 </div>
 
                 {/* Create from template */}
-                {newNameFor === template.id ? (
+                {newNameFor === template?.id ? (
                   <div className="mt-3 flex gap-2">
                     <input
                       autoFocus
                       value={inputName}
                       onChange={e => setInputName(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') handleCreateFromTemplate(template.id); if (e.key === 'Escape') setNewNameFor(null) }}
+                      onKeyDown={e => { if (e.key === 'Enter') handleCreateFromTemplate(template?.id); if (e.key === 'Escape') setNewNameFor(null) }}
                       placeholder="Tên project mới..."
                       className="flex-1 bg-forge-panel border border-forge-accent/30 rounded-xl px-3 py-2 text-sm text-forge-text font-mono placeholder-forge-muted focus:outline-none focus:border-forge-accent"
                     />
                     <button
-                      onClick={() => handleCreateFromTemplate(template.id)}
-                      disabled={!inputName.trim() || creating === template.id}
+                      onClick={() => handleCreateFromTemplate(template?.id)}
+                      disabled={!inputName?.trim() || creating === template?.id}
                       className="px-4 py-2 bg-forge-accent text-forge-bg text-sm font-bold rounded-xl active:scale-95 disabled:opacity-50"
                     >
-                      {creating === template.id ? '⟳' : '→'}
+                      {creating === template?.id ? '⟳' : '→'}
                     </button>
                     <button
                       onClick={() => setNewNameFor(null)}

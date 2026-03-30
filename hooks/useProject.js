@@ -87,9 +87,14 @@ export function useProject(projectId) {
   // ─── Update content (debounced save) ─────────────────────────────────────
   const updateContent = useCallback((stepKey, content) => {
     setStepsMap(prev => {
-      const updated = { ...prev, [stepKey]: { ...prev[stepKey], content } }
+      const stepData = prev[stepKey] || { content: '', versions: [] }
+      const updated = { ...prev, [stepKey]: { ...stepData, content } }
       latestStepsRef.current = updated   // keep mirror in sync
-      lsSetSteps(projectId, updated)     // immediate local save
+      try {
+        lsSetSteps(projectId, updated)     // immediate local save
+      } catch (e) {
+        console.warn('LocalStorage save failed:', e)
+      }
 
       // Debounce remote save — skip if still loading
       clearTimeout(debounceTimers.current[stepKey])
@@ -98,7 +103,7 @@ export function useProject(projectId) {
         if (!navigator.onLine) { pendingSync.current = true; return }
         setStatus('saving')
         try {
-          await dbUpsertStep(projectId, stepKey, content, updated[stepKey].versions)
+          await dbUpsertStep(projectId, stepKey, content, updated[stepKey]?.versions || [])
         } catch (err) {
           console.error('Debounced save failed:', err)
         } finally {
@@ -115,10 +120,15 @@ export function useProject(projectId) {
     if (!content?.trim()) return
 
     setStepsMap(prev => {
-      const newVersions = addVersion(prev[stepKey]?.versions ?? [], content)
-      const updated = { ...prev, [stepKey]: { ...prev[stepKey], versions: newVersions } }
+      const stepData = prev[stepKey] || { content: '', versions: [] }
+      const newVersions = addVersion(stepData.versions ?? [], content)
+      const updated = { ...prev, [stepKey]: { ...stepData, versions: newVersions } }
       latestStepsRef.current = updated
-      lsSetSteps(projectId, updated)
+      try {
+        lsSetSteps(projectId, updated)
+      } catch (e) {
+        console.warn('LocalStorage save failed:', e)
+      }
 
       if (navigator.onLine && !isSyncing.current) {
         setStatus('saving')

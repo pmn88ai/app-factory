@@ -5,16 +5,24 @@ import { supabase } from '../../../lib/supabase'
 import { formatDate } from '../../../lib/storage'
 
 export default function AppDetailPage({ params }) {
-  const { id } = use(params)
+  const resolvedParams = use(params)
+  const id = resolvedParams?.id
   const router = useRouter()
   const [app, setApp] = useState(null)
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
-  useEffect(() => { loadApp() }, [id])
+  useEffect(() => {
+    if (!id) {
+      router.push('/apps')
+      return
+    }
+    loadApp()
+  }, [id])
 
   async function loadApp() {
+    if (!id) return
     setLoading(true)
     try {
       // Load app info
@@ -38,12 +46,13 @@ export default function AppDetailPage({ params }) {
       if (!projErr) setProjects(projData ?? [])
     } catch (err) {
       console.error(err)
+      setProjects([])
     } finally {
       setLoading(false)
     }
   }
 
-  const snippet = `export const APP_ID = "${app?.slug}"
+  const snippet = `export const APP_ID = "${app?.slug || 'unknown-slug'}"
 
 /**
  * Resolve UUID từ Supabase theo APP_ID
@@ -85,8 +94,8 @@ export async function getAppId(supabase) {
               className="w-8 h-8 flex items-center justify-center text-forge-muted hover:text-forge-text border border-forge-border rounded-lg text-sm"
             >←</button>
             <div>
-              <h1 className="text-base font-display font-bold text-forge-text">{app.name}</h1>
-              <p className="text-xs text-forge-muted font-mono">APP_ID: "{app.slug}"</p>
+              <h1 className="text-base font-display font-bold text-forge-text">{app?.name || 'Unknown'}</h1>
+              <p className="text-xs text-forge-muted font-mono">APP_ID: "{app?.slug || 'no-slug'}"</p>
             </div>
           </div>
         </div>
@@ -108,18 +117,18 @@ export async function getAppId(supabase) {
           </button>
         </div>
           <p className="text-xs text-forge-muted">
-            UUID: <span className="font-mono text-forge-muted/70">{app.id}</span>
+            UUID: <span className="font-mono text-forge-muted/70">{app?.id || 'no-id'}</span>
           </p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-forge-card border border-forge-border rounded-2xl p-4 text-center">
-            <p className="text-2xl font-display font-bold text-forge-accent">{projects.length}</p>
+            <p className="text-2xl font-display font-bold text-forge-accent">{(projects || []).length}</p>
             <p className="text-xs text-forge-muted mt-1">Projects</p>
           </div>
           <div className="bg-forge-card border border-forge-border rounded-2xl p-4 text-center">
-            <p className="text-xs font-mono text-forge-accent font-bold">{app.slug}</p>
+            <p className="text-xs font-mono text-forge-accent font-bold">{app?.slug || 'no-slug'}</p>
             <p className="text-xs text-forge-muted mt-1">Slug</p>
           </div>
         </div>
@@ -138,7 +147,7 @@ export async function getAppId(supabase) {
             </button>
           </div>
 
-          {projects.length === 0 ? (
+          {(projects || []).length === 0 ? (
             <div className="py-10 text-center bg-forge-card border border-forge-border rounded-2xl">
               <p className="text-forge-muted text-sm">Chưa có project nào.</p>
               <p className="text-forge-muted/60 text-xs mt-1">
@@ -146,21 +155,21 @@ export async function getAppId(supabase) {
               </p>
             </div>
           ) : (
-            projects.map((project, idx) => (
+            (projects || []).map((project, idx) => (
               <button
-                key={project.id}
-                onClick={() => router.push(`/project/${project.id}`)}
+                key={project?.id}
+                onClick={() => router.push(`/project/${project?.id}`)}
                 className="w-full flex items-center gap-3 px-4 py-4 bg-forge-card border border-forge-border rounded-2xl text-left hover:border-forge-border/80 transition-all animate-fade-in"
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
                 <div className="w-8 h-8 rounded-lg bg-forge-accent/10 border border-forge-accent/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-forge-accent text-xs font-display font-bold">
-                    {project.name.charAt(0).toUpperCase()}
+                    {(project?.name || '?').charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-forge-text truncate">{project.name}</p>
-                  <p className="text-xs text-forge-muted mt-0.5">{formatDate(project.created_at)}</p>
+                  <p className="text-sm font-medium text-forge-text truncate">{project?.name || 'Chưa đặt tên'}</p>
+                  <p className="text-xs text-forge-muted mt-0.5">{formatDate(project?.created_at)}</p>
                 </div>
                 <span className="text-forge-muted">→</span>
               </button>

@@ -33,9 +33,10 @@ export default function AppsPage() {
     setLoading(true)
     try {
       const data = await dbGetApps()
-      setApps(data)
+      setApps(data ?? [])
     } catch (err) {
       console.error(err)
+      setApps([])
     } finally {
       setLoading(false)
     }
@@ -171,35 +172,35 @@ export default function AppsPage() {
             <div className="space-y-3">
               {[1,2,3].map(i => <div key={i} className="h-20 bg-forge-card border border-forge-border rounded-2xl animate-pulse" />)}
             </div>
-          ) : apps.length === 0 ? (
+          ) : (apps || []).length === 0 ? (
             <div className="py-16 text-center">
               <div className="text-4xl mb-3">🗂</div>
               <p className="text-forge-muted text-sm">Chưa có app nào.</p>
             </div>
           ) : (
-            apps.map((app, idx) => (
+            (apps || []).map((app, idx) => (
               <div
-                key={app.id}
+                key={app?.id}
                 className="bg-forge-card border border-forge-border rounded-2xl overflow-hidden animate-fade-in"
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
                 <button
-                  onClick={() => router.push(`/apps/${app.id}`)}
+                  onClick={() => router.push(`/apps/${app?.id}`)}
                   className="w-full flex items-center gap-3 px-4 py-4 text-left"
                 >
                   <div className="w-9 h-9 rounded-xl bg-forge-accent/10 border border-forge-accent/20 flex items-center justify-center flex-shrink-0">
                     <span className="text-forge-accent text-sm font-display font-bold">
-                      {app.slug.charAt(0).toUpperCase()}
+                      {(app?.slug || '?').charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-forge-text">{app.name}</p>
-                    <p className="text-xs text-forge-muted font-mono mt-0.5">APP_ID: "{app.slug}"</p>
+                    <p className="text-sm font-medium text-forge-text">{app?.name || 'Unknown'}</p>
+                    <p className="text-xs text-forge-muted font-mono mt-0.5">APP_ID: "{app?.slug || 'no-slug'}"</p>
                   </div>
                   <span className="text-forge-muted">→</span>
                 </button>
                 <div className="px-4 pb-3 flex items-center justify-between">
-                  <span className="text-xs text-forge-muted">{formatDate(app.created_at)}</span>
+                  <span className="text-xs text-forge-muted">{formatDate(app?.created_at)}</span>
                   <button
                     onClick={() => setDeleteTarget(app)}
                     className="text-xs text-forge-muted hover:text-forge-danger transition-colors"

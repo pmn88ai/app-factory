@@ -12,8 +12,16 @@ import { buildExportPayload, downloadJSON, buildExportFilename } from '../../../
 import { dbRenameProject, dbSetTemplate, dbDuplicateProject } from '../../../lib/db'
 
 export default function ProjectPage({ params }) {
-  const { id } = use(params)
+  const resolvedParams = use(params)
+  const id = resolvedParams?.id
   const router = useRouter()
+
+  useEffect(() => {
+    if (!id) {
+      router.push('/dashboard')
+    }
+  }, [id, router])
+
   const { stepsMap, status, isOnline, updateContent, saveVersion } = useProject(id)
   const [showMenu, setShowMenu] = useState(false)
   const [showShare, setShowShare] = useState(false)
@@ -40,11 +48,11 @@ export default function ProjectPage({ params }) {
     })
   }, [id])
 
-  const steps = STEP_KEYS.map(key => ({
+  const steps = (STEP_KEYS || []).map(key => ({
     id: key,
     ...STEP_META[key],
-    content: stepsMap[key]?.content ?? '',
-    versions: stepsMap[key]?.versions ?? [],
+    content: stepsMap?.[key]?.content ?? '',
+    versions: stepsMap?.[key]?.versions ?? [],
   }))
 
   const filledCount = steps.filter(s => s.content.trim()).length

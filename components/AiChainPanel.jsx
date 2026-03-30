@@ -22,11 +22,11 @@ export default function AiChainPanel({
   const isCancelled = chainStatus === 'cancelled'
 
   // Các bước sẽ chạy (đủ điều kiện)
-  const eligibleSteps = Object.entries(AI_CHAIN_MAP).filter(
-    ([key]) => stepsMap[key]?.content?.trim()
+  const eligibleSteps = Object.entries(AI_CHAIN_MAP || {}).filter(
+    ([key]) => stepsMap?.[key]?.content?.trim()
   )
-  const skippedSteps = Object.entries(AI_CHAIN_MAP).filter(
-    ([key]) => !stepsMap[key]?.content?.trim()
+  const skippedSteps = Object.entries(AI_CHAIN_MAP || {}).filter(
+    ([key]) => !stepsMap?.[key]?.content?.trim()
   )
 
   return (
@@ -43,7 +43,7 @@ export default function AiChainPanel({
             <div>
               <h3 className="font-display font-bold text-forge-text">⚡ Chạy Pipeline AI</h3>
               <p className="text-xs text-forge-muted mt-0.5">
-                AI sẽ tự động xử lý {eligibleSteps.length} bước theo thứ tự
+                AI sẽ tự động xử lý {(eligibleSteps || []).length} bước theo thứ tự
               </p>
             </div>
             {/* Status badge */}
@@ -67,7 +67,7 @@ export default function AiChainPanel({
 
         {/* Step list */}
         <div className="overflow-y-auto flex-1 px-4 py-3 space-y-2">
-          {eligibleSteps.length === 0 ? (
+          {(eligibleSteps || []).length === 0 ? (
             <div className="py-8 text-center">
               <p className="text-forge-muted text-sm">Không có step nào đủ điều kiện.</p>
               <p className="text-forge-muted/60 text-xs mt-1">
@@ -75,9 +75,9 @@ export default function AiChainPanel({
               </p>
             </div>
           ) : (
-            eligibleSteps.map(([key, mode], idx) => {
+            (eligibleSteps || []).map(([key, mode], idx) => {
               const isActive = activeStepKey === key
-              const isDoneStep = completedSteps.includes(key)
+              const isDoneStep = (completedSteps || []).includes(key)
               const isError = errorStep === key
               const isPending = !isActive && !isDoneStep && !isError
 
@@ -111,7 +111,7 @@ export default function AiChainPanel({
                       {STEP_META[key]?.label ?? key}
                     </p>
                     <p className="text-xs text-forge-muted mt-0.5">
-                      {isActive ? 'Đang xử lý...' : isDoneStep ? 'Đã xong' : isError ? 'Gặp lỗi' : `Sẽ: ${MODE_LABELS[mode]}`}
+                      {isActive ? 'Đang xử lý...' : isDoneStep ? 'Đã xong' : isError ? 'Gặp lỗi' : `Sẽ: ${MODE_LABELS[mode] || 'Xử lý'}`}
                     </p>
                   </div>
 
@@ -126,10 +126,10 @@ export default function AiChainPanel({
           )}
 
           {/* Skipped steps */}
-          {skippedSteps.length > 0 && (
+          {(skippedSteps || []).length > 0 && (
             <div className="mt-2 pt-2 border-t border-forge-border">
               <p className="text-xs text-forge-muted mb-2">Bỏ qua (chưa có nội dung):</p>
-              {skippedSteps.map(([key]) => (
+              {(skippedSteps || []).map(([key]) => (
                 <p key={key} className="text-xs text-forge-muted/50 pl-2">
                   · {STEP_META[key]?.label ?? key}
                 </p>
@@ -150,7 +150,7 @@ export default function AiChainPanel({
               </button>
               <button
                 onClick={onRun}
-                disabled={eligibleSteps.length === 0}
+                disabled={(eligibleSteps || []).length === 0}
                 className="flex-1 py-3 bg-forge-accent text-forge-bg font-display font-bold text-sm rounded-xl active:scale-95 disabled:opacity-40"
               >
                 ⚡ Chạy ngay

@@ -16,17 +16,22 @@ export default function SharePage({ params }) {
   const [forked, setForked] = useState(false)
 
   useEffect(() => {
+    if (!token) {
+      router.push('/dashboard')
+      return
+    }
     loadSharedProject()
   }, [token])
 
   async function loadSharedProject() {
+    if (!token) return
     setLoading(true)
     try {
       const res = await fetch(`/api/share?token=${encodeURIComponent(token)}`)
       const data = await res.json()
 
-      if (!res.ok || data.error) {
-        setError(data.error || 'Không tìm thấy project')
+      if (!res.ok || data?.error) {
+        setError(data?.error || 'Không tìm thấy project')
         return
       }
 
@@ -34,7 +39,7 @@ export default function SharePage({ params }) {
 
       // Convert steps array → map
       const map = {}
-      for (const s of data.steps) {
+      for (const s of (data?.steps || [])) {
         map[s.step_key] = { content: s.content ?? '' }
       }
       setStepsMap(map)
@@ -46,26 +51,27 @@ export default function SharePage({ params }) {
   }
 
   async function handleFork() {
+    if (!project) return
     setForking(true)
     try {
-      const newName = `${project.name} (fork)`
+      const newName = `${project?.name || 'Untitled'} (fork)`
       const newProject = await dbForkProject(token, newName)
       setForked(true)
-      setTimeout(() => router.push(`/project/${newProject.id}`), 1200)
+      setTimeout(() => router.push(`/project/${newProject?.id}`), 1200)
     } catch (err) {
       alert('Fork thất bại: ' + err.message)
       setForking(false)
     }
   }
 
-  const steps = STEP_KEYS.map(key => ({
+  const steps = (STEP_KEYS || []).map(key => ({
     id: key,
     ...STEP_META[key],
-    content: stepsMap[key]?.content ?? '',
+    content: stepsMap?.[key]?.content ?? '',
   }))
 
-  const filledCount = steps.filter(s => s.content.trim()).length
-  const progress = Math.round((filledCount / steps.length) * 100)
+  const filledCount = (steps || []).filter(s => s?.content?.trim()).length
+  const progress = Math.round((filledCount / (steps || []).length) * 100)
 
   if (loading) {
     return (
@@ -147,31 +153,31 @@ export default function SharePage({ params }) {
       <div className="max-w-2xl mx-auto px-4 pt-6 pb-12 space-y-6">
         {/* Step nav */}
         <div className="flex items-center gap-1 overflow-x-auto pb-2">
-          {steps.map((step, idx) => (
-            <div key={step.id} className="flex items-center gap-1 flex-shrink-0">
+          {(steps || []).map((step, idx) => (
+            <div key={step?.id} className="flex items-center gap-1 flex-shrink-0">
               <a
-                href={`#ro-step-${step.id}`}
+                href={`#ro-step-${step?.id}`}
                 className={`text-xs px-2 py-1 rounded-md font-mono transition-all ${
-                  step.content.trim()
+                  (step?.content || '').trim()
                     ? 'bg-forge-accent/10 text-forge-accent border border-forge-accent/30'
                     : 'bg-forge-card text-forge-muted border border-forge-border'
                 }`}
               >
                 {idx + 1}
               </a>
-              {idx < steps.length - 1 && (
+              {idx < (steps || []).length - 1 && (
                 <span className="text-forge-border text-xs">→</span>
               )}
             </div>
           ))}
         </div>
 
-        {steps.map((step, idx) => (
+        {(steps || []).map((step, idx) => (
           <ReadOnlyStepBlock
-            key={step.id}
+            key={step?.id}
             step={step}
             stepNumber={idx + 1}
-            isLast={idx === steps.length - 1}
+            isLast={idx === (steps || []).length - 1}
           />
         ))}
 

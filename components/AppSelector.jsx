@@ -10,7 +10,7 @@ export default function AppSelector({ value, onChange }) {
     dbGetApps().then(setApps).catch(() => {})
   }, [])
 
-  const selected = apps.find(a => a.id === value)
+  const selected = (apps || []).find(a => a?.id === value)
 
   return (
     <div className="relative">
@@ -19,7 +19,7 @@ export default function AppSelector({ value, onChange }) {
         className="w-full flex items-center justify-between bg-forge-panel border border-forge-border rounded-xl px-4 py-3 text-sm transition-all hover:border-forge-accent/30 focus:outline-none focus:border-forge-accent"
       >
         <span className={selected ? 'text-forge-accent font-mono' : 'text-forge-muted'}>
-          {selected ? `${selected.name} (${selected.slug})` : 'Chưa gắn app nào'}
+          {selected ? `${selected?.name || 'Unknown'} (${selected?.slug || 'no-slug'})` : 'Chưa gắn app nào'}
         </span>
         <span className="text-forge-muted text-xs">{open ? '▲' : '▼'}</span>
       </button>
@@ -39,27 +39,27 @@ export default function AppSelector({ value, onChange }) {
               <span>Không gắn</span>
             </button>
 
-            {apps.length === 0 ? (
+            {(apps || []).length === 0 ? (
               <div className="px-4 py-3 text-xs text-forge-muted">
                 Chưa có app nào. <a href="/apps" className="text-forge-accent underline">Tạo app</a>
               </div>
             ) : (
-              apps.map(app => (
+              (apps || []).map(app => (
                 <button
-                  key={app.id}
-                  onClick={() => { onChange(app.id); setOpen(false) }}
+                  key={app?.id}
+                  onClick={() => { onChange(app?.id || null); setOpen(false) }}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-colors ${
-                    value === app.id ? 'text-forge-accent bg-forge-accent/5' : 'text-forge-text hover:bg-forge-panel'
+                    value === app?.id ? 'text-forge-accent bg-forge-accent/5' : 'text-forge-text hover:bg-forge-panel'
                   }`}
                 >
                   <span className="w-6 h-6 rounded bg-forge-accent/10 border border-forge-accent/20 flex items-center justify-center text-xs font-display font-bold text-forge-accent flex-shrink-0">
-                    {app.slug.charAt(0).toUpperCase()}
+                    {(app?.slug || '?').charAt(0).toUpperCase()}
                   </span>
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{app.name}</p>
-                    <p className="text-xs text-forge-muted font-mono">"{app.slug}"</p>
+                    <p className="font-medium truncate">{app?.name || 'Unknown'}</p>
+                    <p className="text-xs text-forge-muted font-mono">"{app?.slug || 'no-slug'}"</p>
                   </div>
-                  {value === app.id && <span className="ml-auto text-forge-accent">✓</span>}
+                  {value === app?.id && <span className="ml-auto text-forge-accent">✓</span>}
                 </button>
               ))
             )}
