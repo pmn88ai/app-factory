@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --forge-bg: #0a0a0f;
+  --forge-panel: #12121a;
+  --forge-card: #1a1a26;
+  --forge-border: #2a2a3e;
+  --forge-accent: #00ff94;
+  --forge-muted: #6b6b8a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--forge-panel);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--forge-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--forge-muted);
+}
+
+/* Textarea focus glow */
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px #00ff9444, 0 0 12px #00ff9422;
+}
+
+/* Selection */
+::selection {
+  background: #00ff9433;
+  color: #fff;
+}
+
+/* Smooth height transition for textareas */
+textarea {
+  resize: none;
+  transition: box-shadow 0.2s ease;
+}
+
+/* Step connector line */
+.step-connector {
+  width: 2px;
+  background: linear-gradient(to bottom, #2a2a3e, #00ff9444);
+  margin: 0 auto;
+}
+
+/* Grid noise texture overlay */
+.noise-bg {
+  position: relative;
+}
+.noise-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* Glow dot for active step */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.blink { animation: blink 1.5s ease-in-out infinite; }
